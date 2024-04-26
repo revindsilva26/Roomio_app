@@ -6,32 +6,26 @@
 {%if user.is_authenticated %}
 
 <h1> Apartments</h1>
+<br/>
+<div class="col-md-6 offset-md-3">
+<form class="form-inline my-2 my-lg-0">
+    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+    <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Search</button>
+</form>
+</div>
 {%if  apartments %}
     {%for apartment in apartments %}
-    {{apartment}} <br/>
+    <div class="card">
+        <h5 class="card-header">{{apartment.building_name}}</h5>
+        <div class="card-body">
+          <h5 class="card-title">Year Built: {{apartment.year_built}}</h5>
+          <a href={%url 'apartment' apartment.id %} class="btn btn-dark">View Apartment</a>
+        </div>
+      </div>
+    
+    <!-- <button type="button" class="btn btn-dark">View Apartment</button> -->
     {%endfor %}
 {%endif%}
-
-{%else%}
-
-<div class="col-md-6 offset-md-3">
-    <h1>Login</h1>
-    <br/>
-    
-    <form method="POST" action="{% url 'home' %}">
-        {% csrf_token %}
-    
-      <div class="mb-3">
-        <input type="text" class="form-control" name="username", placeholder="Username" required>
-        
-      </div><br/>
-      <div class="mb-3">
-        <input type="password" class="form-control" name="password", placeholder="Password" required>
-      </div>
-      <br/>
-      <button type="submit" class="btn btn-secondary">Login</button>
-    
-    </form>
 
 {%endif%}
 {% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{%if user.is_authenticated %}
+
+{%if  apartments %}
+    <H1>{{apartments.building_name}}</H1> <br/>
+    <H2>{{apartments.company_name}}</H2> <br/>
+    {%if policies %}
+    <h2>Pet Policy</h2>
+    {%for policy in policies%}
+    <h3>{{policy.pet_type}}</h3>
+    <h3>{{policy.pet_size}}</h3>
+    <br/>
+    {%endfor%}
+    {%endif%}
+    {%if allowed or not_allowed%}
+    <h2>Your Pets</h2>
+    {%endif%}
+    {%if allowed %}
+    <h2>Allowed</h2>
+    {%for pet in allowed%}
+    <h3>{{pet.pet_name}}</h3>
+    <br/>
+    {%endfor%}
+    {%endif%}
+    {%if not_allowed %}
+    <h2>Not Allowed</h2>
+    {%for pet in not_allowed%}
+    <h3>{{pet.pet_name}}</h3>
+    <br/>
+    {%endfor%}
+    {%endif%}
+
+{%endif%}
+
+{%endif%}
+{% endblock %}

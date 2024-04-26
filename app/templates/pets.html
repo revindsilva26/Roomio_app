@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{%if user.is_authenticated %}
+
+<h1> Pets</h1>
+
+{%if  pets %}
+    {%for pet in pets %}
+    {{pet.pet_name}} <br/>
+    <a href={%url 'update_pet' pet.id %} class="btn btn-light">Update</a>
+    {%endfor %}
+{%else%}
+<h1>No pets found.</h1><br/>
+{%endif%}
+
+{%endif%}
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{%if user.is_authenticated %}
+<div class="container">
+    <h1>Express Interest</h1>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        {{ form.unit_rent_id.label_tag }}
+        {{ form.unit_rent_id }}
+        {{ form.unit_rent_id.errors }}
+      </div>
+      <div class="form-group">
+        {{ form.roommate_cnt.label_tag }}
+        {{ form.roommate_cnt }}
+        {{ form.roommate_cnt.errors }}
+      </div>
+      <div class="form-group">
+        {{ form.move_in_date.label_tag }}
+        {{ form.move_in_date }}
+        {{ form.move_in_date.errors }}
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+
+  {%endif%}
+  {% endblock %}

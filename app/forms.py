@@ -1,6 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
+from .models import *
 
 class SignUpForm(UserCreationForm):
 	email = forms.EmailField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Email Address'}))
@@ -30,3 +31,41 @@ class SignUpForm(UserCreationForm):
 		self.fields['password2'].widget.attrs['placeholder'] = 'Confirm Password'
 		self.fields['password2'].label = ''
 		self.fields['password2'].help_text = '<span class="form-text text-muted"><small>Enter the same password as before, for verification.</small></span>'	
+		
+
+class PetForm(forms.ModelForm):
+    class Meta:
+        model = Pet
+        fields = ('pet_name','pet_type','pet_size')
+        widgets = {
+			'pet_name': forms.TextInput(attrs = {'class':'form-control'}),
+			'pet_type': forms.TextInput(attrs = {'class':'form-control'}),
+			'pet_size': forms.TextInput(attrs = {'class':'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        instance.user = self.user
+        if commit:
+            instance.save()
+        return instance
+		
+class InterestForm(forms.ModelForm):
+    class Meta:
+        model = Interests
+        fields = ('unit_rent_id', 'roommate_cnt', 'move_in_date')
+        widgets = {
+            'unit_rent_id': forms.Select(attrs={'class': 'form-control'}),
+            'roommate_cnt': forms.NumberInput(attrs={'class': 'form-control'}),
+            'move_in_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        self.instance.username = user
+        self.fields['unit_rent_id'].queryset = ApartmentUnit.objects.all()
