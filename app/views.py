@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from . forms import SignUpForm
+from .models import *
 
 def home(request):
 	# Check to see if logging in
@@ -43,5 +44,6 @@ def register_user(request):
     return render(request, 'register.html', {'form':form})
 
 
-# def searchApartment(request):
-	
+def searchApartment(request):
+	apartments = ApartmentBuilding.objects.all()
+	return render(request, 'search_apartments.html', {'apartments':apartments})
