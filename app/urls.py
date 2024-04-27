@@ -10,7 +10,8 @@ urlpatterns = [
     path('search_apartment', views.searchApartment, name = 'search_apartment'),
     path('register_pet',views.registerPet, name = "register_pet"),
     path('pets',views.viewPet, name = "viewPet"),
-    path('post_interests',views.postInterest, name = "post_interest"),
+    path('post_interests/<int:pk>',views.postInterest, name = "post_interest"),
     path('apartment/<int:pk>',views.apartment,name="apartment"),
     path('update_pet/<int:pk>',views.updatePet, name= "update_pet"),
+    path('interests/<int:pk>',views.viewInterests, name = "view_interest"),
 ]

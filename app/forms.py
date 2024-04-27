@@ -57,15 +57,28 @@ class PetForm(forms.ModelForm):
 class InterestForm(forms.ModelForm):
     class Meta:
         model = Interests
-        fields = ('unit_rent_id', 'roommate_cnt', 'move_in_date')
+        fields = ('roommate_cnt', 'move_in_date')
         widgets = {
-            'unit_rent_id': forms.Select(attrs={'class': 'form-control'}),
+            # 'unit_rent_id': forms.Select(attrs={'class': 'form-control'}),
             'roommate_cnt': forms.NumberInput(attrs={'class': 'form-control'}),
             'move_in_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
+        apartment_unit = kwargs.pop('apartment_unit', None)
         super().__init__(*args, **kwargs)
         self.instance.username = user
-        self.fields['unit_rent_id'].queryset = ApartmentUnit.objects.all()
+        self.instance.unit_rent_id = apartment_unit
+        # self.fields['unit_rent_id'].queryset = ApartmentUnit.objects.all()
+
+class ApartmentSearchForm(forms.Form):
+    company_name = forms.CharField(max_length=20, required=False, label='Company Name')
+    building_name = forms.CharField(max_length=20, required=False, label='Building Name')
+
+    def clean(self):
+        cleaned_data = super().clean()
+        company_name = cleaned_data.get('company_name')
+        building_name = cleaned_data.get('building_name')
+
+        return cleaned_data

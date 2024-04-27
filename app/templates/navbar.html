@@ -9,6 +9,12 @@
           
           {% if user.is_authenticated %}
           <li class="nav-item">
+            <a class="nav-link" href="{% url 'search_apartment' %}">Apartments</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'viewPet' %}">Your Pets</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
           </li>
   

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{%if user.is_authenticated %}
+
+
+{%if interests %}
+<div><h1>Interests</h1></div>
+    {%for interest in interests %}
+    <div class="card">
+        <h5 class="card-header">{{interest.username}}</h5>
+        <div class="card-body">
+          <h5 class="card-title"> {{interest.unit_rent_id}}</h5>
+          <p class="card-text">Roommates: {{interest.roommate_cnt}}</p>
+          <p class="card-text">Move-in date: {{interest.move_in_date}}</p>
+        </div>
+      </div>
+    {%endfor %}
+    <br/>
+    <div>
+        <button type="button" class="btn btn-dark"><a class="nav-link" href="{% url 'post_interest' apartment_unit%}">Post Interest</a></button> 
+        </div>
+{%else%}
+<h1>No interests found.</h1><br/>
+{%endif%}
+
+{%endif%}
+{% endblock %}

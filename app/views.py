@@ -46,8 +46,25 @@ def register_user(request):
 
 
 def searchApartment(request):
-	apartments = ApartmentBuilding.objects.all()
-	return render(request, 'search_apartments.html', {'apartments':apartments})
+    if request.method == 'POST':
+        form = ApartmentSearchForm(request.POST)
+        if form.is_valid():
+            building_name = form.cleaned_data['building_name']
+            company_name = form.cleaned_data['company_name']
+            apartments = []
+            if building_name and company_name:
+                apartments = ApartmentBuilding.objects.filter(building_name = building_name).filter(company_name=company_name)
+            elif  building_name and not company_name:
+                apartments = ApartmentBuilding.objects.filter(building_name = building_name)
+            elif  not building_name and company_name:
+                apartments = ApartmentBuilding.objects.filter(company_name=company_name)
+            else:
+                 apartments = ApartmentBuilding.objects.all()
+            return render(request, 'search_apartments.html', {'apartments':apartments, "form": form})
+    else:
+         form = ApartmentSearchForm()
+         apartments = ApartmentBuilding.objects.all()
+         return render(request, 'search_apartments.html', {'apartments':apartments, "form": form})
 
 
 def registerPet(request):
@@ -65,20 +82,21 @@ def viewPet(request):
     pets = Pet.objects.filter(user = request.user)
     return render(request, 'pets.html', {'pets':pets})
 
-def postInterest(request):
+def postInterest(request, pk):
+    apartment_unit = ApartmentUnit.objects.get(unit_rent_id = pk)
     if request.method == 'POST':
-        form = InterestForm(request.POST, user=request.user)
+        form = InterestForm(request.POST, user=request.user, apartment_unit = apartment_unit)
         if form.is_valid():
             form.save()
             messages.success(request,"You have successfully posted your interest")
-            return redirect('viewInterests')
+            return redirect('view_interest' , pk )
     else:
-        form = InterestForm(user=request.user)
+        form = InterestForm(user=request.user, apartment_unit = apartment_unit)
     return render(request, 'post_interests.html', {'form': form})
 
-def viewInterests(request):
-     interests = Interests.objects.filter(~Q(user = request.user))
-     return render(request, 'interests.html', {'interests':interests})
+def viewInterests(request, pk):
+     interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk)
+     return render(request, 'interests.html', {'interests':interests, 'apartment_unit':pk})
 
 
 def apartment(request, pk):
@@ -88,6 +106,7 @@ def apartment(request, pk):
     apartment = ApartmentBuilding.objects.get(id = pk)
     pet_policy = PetPolicy.objects.filter(apartment_building = apartment).filter(is_allowed = True)
     pets = Pet.objects.filter(user = request.user)
+    apartment_units = ApartmentUnit.objects.filter(apartment_building = apartment)
     for pet in pets:
         flag = False
         for  policy in pet_policy:
@@ -98,7 +117,7 @@ def apartment(request, pk):
         if flag is not True:
              not_allowed.append(pet)
         
-    return render(request, 'apartment.html', {'apartments':apartment, 'policies' : pet_policy, 'allowed':allowed, 'not_allowed': not_allowed }) 
+    return render(request, 'apartment.html', {'apartments':apartment, 'policies' : pet_policy, 'allowed':allowed, 'not_allowed': not_allowed, 'apartment_units':apartment_units}) 
 
 
 def updatePet(request, pk):

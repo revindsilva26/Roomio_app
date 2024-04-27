@@ -7,33 +7,60 @@
 
 {%if  apartments %}
     <H1>{{apartments.building_name}}</H1> <br/>
-    <H2>{{apartments.company_name}}</H2> <br/>
-    {%if policies %}
-    <h2>Pet Policy</h2>
-    {%for policy in policies%}
-    <h3>{{policy.pet_type}}</h3>
-    <h3>{{policy.pet_size}}</h3>
-    <br/>
+    <H3>{{apartments.company_name}}</H3> <br/>
+    {%if apartment_units %}
+    <div style="display: flex;">
+    {%for  unit in apartment_units%}
+    <div class="card" style="width: 24rem;">
+        <div class="card-body">
+          <h5 class="card-title">Unit Number: {{unit.unit_number}}</h5>
+          <br/>
+          <p class="card-text">Monthly Rent: ${{unit.monthly_rent}}</p>
+          <p class="card-text">Square Footage: {{unit.square_footage}}</p>
+          <p class="card-text">Available Move in Date: {{unit.available_date_for_move_in}}</p>
+          <a href="{% url 'view_interest' unit.unit_rent_id%}" class="btn btn-dark">View Interests</a>
+        </div>
+    </div>
     {%endfor%}
+</div>
+    {%endif%}
+    <div style="display: flex;">
+    {%if policies %}
+    <div class="card" style="width: 24rem;">
+        <div class="card-header">
+          Pet Policy
+        </div>
+        <div class="card-body">
+          <blockquote class="blockquote mb-0">
+            {%for policy in policies%}
+            <p>Pet Type: {{policy.pet_type}}</p>
+            <footer class="blockquote-footer">{{policy.pet_size}}</cite></footer>
+            <br/>
+            {%endfor%}
+          </blockquote>
+        </div>
+      </div>
     {%endif%}
     {%if allowed or not_allowed%}
-    <h2>Your Pets</h2>
-    {%endif%}
-    {%if allowed %}
-    <h2>Allowed</h2>
-    {%for pet in allowed%}
-    <h3>{{pet.pet_name}}</h3>
-    <br/>
-    {%endfor%}
-    {%endif%}
-    {%if not_allowed %}
-    <h2>Not Allowed</h2>
-    {%for pet in not_allowed%}
-    <h3>{{pet.pet_name}}</h3>
-    <br/>
-    {%endfor%}
-    {%endif%}
-
+    <div class="card" style="width: 24rem;">
+        <h5 class="card-header">Your Pets</h5>
+        <div class="card-body">
+            {%if allowed %}
+          <h5 class="card-title">Allowed</h5>
+            {%for pet in allowed%}
+          <p class="card-text">{{pet.pet_name}}</p>
+            {%endfor%}
+            {%endif%}
+            {%if not_allowed %}
+            <h5 class="card-title">Not Allowed</h5>
+              {%for pet in not_allowed%}
+            <p class="card-text">{{pet.pet_name}}</p>
+              {%endfor%}
+              {%endif%}
+        </div>
+      </div>
+{%endif%}
+</div>
 {%endif%}
 
 {%endif%}
