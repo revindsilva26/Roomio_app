@@ -101,8 +101,8 @@ def postInterest(request, pk):
     return render(request, 'post_interests.html', {'form': form})
 
 def viewInterests(request, pk):
-     interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk)
-     return render(request, 'interests.html', {'interests':interests, 'apartment_unit':pk})
+    interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk)
+    return render(request, 'interests.html', {'interests':interests, 'apartment_unit':pk})
 
 
 def apartment(request, pk):
@@ -214,8 +214,13 @@ def searchInterest(request, pk):
             roommates = form.cleaned_data['roommates']
             move_in_date_from = form.cleaned_data['move_in_date_from']
             move_in_date_to =form.cleaned_data['move_in_date_to']
-            interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk).filter(roommate_cnt = roommates).filter(move_in_date__gte = move_in_date_from, move_in_date__lte = move_in_date_to)
-            print(interests)
+            if roommates and not move_in_date_from and not move_in_date_to:
+                interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk).filter(roommate_cnt = roommates)
+            elif not roommates and move_in_date_to and move_in_date_from:
+                interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk).filter(move_in_date__gte = move_in_date_from, move_in_date__lte = move_in_date_to) 
+            else:
+                interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk).filter(roommate_cnt = roommates).filter(move_in_date__gte = move_in_date_from, move_in_date__lte = move_in_date_to)
+            return render(request, 'interests.html', {'interests':interests, 'apartment_unit':pk})
             
     else:
         form = SearchInterestForm()
