@@ -14,4 +14,6 @@ urlpatterns = [
     path('apartment/<int:pk>',views.apartment,name="apartment"),
     path('update_pet/<int:pk>',views.updatePet, name= "update_pet"),
     path('interests/<int:pk>',views.viewInterests, name = "view_interest"),
+    path('search_building_unit', views.buildingUnitInfo, name = 'buildingUnitInfo'),
+    path('advanced_search_building_unit', views.advancedBuildingUnitInfo, name = 'advancedBuildingUnitInfo'),
 ]

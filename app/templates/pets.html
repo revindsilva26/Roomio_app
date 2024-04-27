@@ -23,6 +23,9 @@
     {%endfor %}
 {%else%}
 <h1>No pets found.</h1><br/>
+<div>
+    <button type="button" class="btn btn-dark"><a class="nav-link" href="{% url 'register_pet' %}">Register a Pet</a></button> 
+    </div>
 {%endif%}
 
 {%endif%}

@@ -116,8 +116,6 @@ class AmenitiesIn(models.Model):
 
 class Provides(models.Model):
     atype = models.ForeignKey('Amenities', on_delete=models.CASCADE, to_field='atype')
-    company_name = models.CharField(max_length=20)
-    building_name = models.CharField(max_length=20)
     fee = models.IntegerField()
     waiting_list = models.IntegerField()
     apartment_building = models.ForeignKey('ApartmentBuilding', on_delete=models.CASCADE)

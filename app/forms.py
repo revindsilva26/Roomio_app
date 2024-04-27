@@ -82,3 +82,27 @@ class ApartmentSearchForm(forms.Form):
         building_name = cleaned_data.get('building_name')
 
         return cleaned_data
+
+class ApartmentUnitSearchForm(forms.Form):
+    building_name = forms.CharField(max_length=20, required=True, label='Building Name')
+    unit_number = forms.CharField(max_length=5, required=False, label='Unit Number')
+    def clean(self):
+        cleaned_data = super().clean()
+        unit_number = cleaned_data.get('unit_number')
+        building_name = cleaned_data.get('building_name')
+        return cleaned_data
+    
+class AdvancedApartmentUnitSearchForm(forms.Form):
+    public_amenities_list = set([(amenity.atype, amenity.atype) for amenity in list(Provides.objects.all())])
+    private_amenities_list = set([(amenity.atype, amenity.atype) for amenity in list(AmenitiesIn.objects.all())])
+    building_name = forms.CharField(max_length=20, required=True, label='Building Name')
+    expected_rent = forms.DecimalField(max_digits=20, required = False, label = 'Expected Rent')
+    public_amenities = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, choices=public_amenities_list, required=False, label='Public Amenities')
+    private_amenities = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, choices=private_amenities_list, required= False, label = 'Private Amenities')
+    def clean(self):
+        cleaned_data = super().clean()
+        building_name = cleaned_data.get('building_name')
+        expected_rent = cleaned_data.get('expected_rent')
+        public_amenities = cleaned_data.get('public_amenities')
+        private_amenities = cleaned_data.get('private_amenities')
+        return cleaned_data

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+{%if user.is_authenticated %}
+
+<h1> Search For Units</h1>
+<br/>
+<div class="col-md-6 offset-md-3">
+<form class="form-inline my-2 my-lg-0" method=POST action="{%url 'buildingUnitInfo' %}" >
+    {%csrf_token%}
+    {{form.as_p}}
+    <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Search</button>
+</form>
+</div>
+
+<a href="{%url 'advancedBuildingUnitInfo'%}" class="btn btn-dark">Advanced Search</a>
+
+{%if  apartment %}
+<div class="card" style="width: 24rem;">
+  <div class="card-body">
+    <h4 class="card-title">{{apartment.building_name}}</h4>
+    <br/>
+    <h5 class="card-text">Unit Number: {{unit.unit_number}}</h5>
+    <br/>
+    <p class="card-text">Monthly Rent: ${{unit.monthly_rent}}</p>
+    <p class="card-text">Square Footage: {{unit.square_footage}}</p>
+    <p class="card-text">Available Move in Date: {{unit.available_date_for_move_in}}</p>
+    <p class="card-text">Bedrooms: {{bedrooms}} Bathrooms: {{bathrooms}}</p>
+    <a href="{% url 'view_interest' unit.unit_rent_id%}" class="btn btn-dark">View Interests</a>
+  </div>
+</div>
+    
+{%endif%}
+
+{%endif%}
+{% endblock %}

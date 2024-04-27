@@ -4,6 +4,12 @@ from django.contrib import messages
 from . forms import *
 from .models import *
 from django.db.models import Q
+from django.core.exceptions import ObjectDoesNotExist
+from django.template.defaulttags import register
+
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
 
 def home(request):
 	# Check to see if logging in
@@ -107,6 +113,7 @@ def apartment(request, pk):
     pet_policy = PetPolicy.objects.filter(apartment_building = apartment).filter(is_allowed = True)
     pets = Pet.objects.filter(user = request.user)
     apartment_units = ApartmentUnit.objects.filter(apartment_building = apartment)
+    # rooms = Rooms.objects.filter(unit_rent_id__in = apartment_units)
     for pet in pets:
         flag = False
         for  policy in pet_policy:
@@ -128,3 +135,72 @@ def updatePet(request, pk):
         messages.success(request,"You have successfully updated your pet")
         return redirect('viewPet')
     return render(request, 'update_pet.html', {"form":form})
+
+
+
+def buildingUnitInfo(request):
+    if request.method == 'POST':
+        form = ApartmentUnitSearchForm(request.POST)
+        if form.is_valid():
+            building_name = form.cleaned_data['building_name']
+            unit_number = form.cleaned_data['unit_number']
+            if building_name and unit_number:
+                try:
+                    apartment = ApartmentBuilding.objects.get(building_name = building_name)
+                    apartment_unit = ApartmentUnit.objects.filter(apartment_building = apartment).get(unit_number = unit_number)
+                except ObjectDoesNotExist:
+                    apartment = None
+                    apartment_unit = None
+                if not apartment_unit and not apartment:
+                    messages.success(request,"Does not exist!")
+                    return render(request, 'search_unit.html', {"form": form})
+                rooms = Rooms.objects.filter(unit_rent_id = apartment_unit)
+                bedrooms = 0; bathrooms = 0
+                for  room in rooms:
+                    if "bedroom" in room.name.lower():
+                        bedrooms +=1
+                    elif "bathroom" in room.name.lower():
+                        bathrooms +=1            
+                print(bedrooms, bathrooms)    
+                return render(request, 'search_unit.html', {'apartment':apartment, "unit":apartment_unit, "bedrooms": bedrooms, "bathrooms":bathrooms, "form": form})
+
+    else:
+         form = ApartmentUnitSearchForm()
+         return render(request, 'search_unit.html', {"form": form})
+    
+
+def advancedBuildingUnitInfo(request):
+    if request.method == 'POST':
+        form = AdvancedApartmentUnitSearchForm(request.POST)
+        if form.is_valid():
+            building_name = form.cleaned_data['building_name']
+            expected_rent = form.cleaned_data['expected_rent']
+            public_amenity_list = set(form.cleaned_data['public_amenities'])
+            private_amenity_list = set(form.cleaned_data['private_amenities'])
+            apartment = ApartmentBuilding.objects.get(building_name = building_name)
+            apartment_unit = ApartmentUnit.objects.filter(apartment_building = apartment).filter(monthly_rent__gte = int(expected_rent)-100, monthly_rent__lte = int(expected_rent) + 100)
+            bedrooms = {}; bathrooms = {}; filtered_apartment_units = []
+            building_amenities = set([x.atype_id for x in Provides.objects.filter(apartment_building = apartment)])
+            for apartment_unit_i in apartment_unit:
+                unit_amenities = set([x.atype_id for x in AmenitiesIn.objects.filter(unit_rent_id = apartment_unit_i)])
+                if len(unit_amenities) < len(private_amenity_list) or len(building_amenities) < len(public_amenity_list):
+                    messages.success(request,"Try again!")  
+                    return render(request, 'advanced_search_unit.html', {"form": form})
+                if private_amenity_list.issubset(unit_amenities) and public_amenity_list.issubset(building_amenities):    
+                    filtered_apartment_units.append(apartment_unit_i)
+                bed = 0; bath = 0
+                k = Rooms.objects.filter(unit_rent_id = apartment_unit_i)
+                for  room in k:
+                    if "bedroom" in room.name.lower():
+                        bed +=1
+                    elif "bathroom" in room.name.lower():
+                        bath +=1
+                bedrooms[apartment_unit_i] = bed
+                bathrooms[apartment_unit_i] = bath
+            if len(filtered_apartment_units) == 0:
+               messages.success(request,"Try again!")  
+            return render(request, 'advanced_search_unit.html', {'apartment':apartment, "unit":filtered_apartment_units, "form": form, "bedrooms":bedrooms, "bathrooms":bathrooms})
+    else:
+         form = AdvancedApartmentUnitSearchForm()
+         return render(request, 'advanced_search_unit.html', {"form": form})
+    
