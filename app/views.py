@@ -204,3 +204,19 @@ def advancedBuildingUnitInfo(request):
          form = AdvancedApartmentUnitSearchForm()
          return render(request, 'advanced_search_unit.html', {"form": form})
     
+
+def searchInterest(request, pk):
+    unit = ApartmentUnit.objects.get(pk = pk)
+    interests = Interests.objects.filter(unit_rent_id = unit).filter(~Q(username = request.user))
+    if request.method == 'POST':
+        form = SearchInterestForm(request.POST)
+        if form.is_valid():
+            roommates = form.cleaned_data['roommates']
+            move_in_date_from = form.cleaned_data['move_in_date_from']
+            move_in_date_to =form.cleaned_data['move_in_date_to']
+            interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk).filter(roommate_cnt = roommates).filter(move_in_date__gte = move_in_date_from, move_in_date__lte = move_in_date_to)
+            print(interests)
+            
+    else:
+        form = SearchInterestForm()
+    return render(request, 'search_Interest.html', {'form':form, "unit":unit})	

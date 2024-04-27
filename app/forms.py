@@ -3,6 +3,11 @@ from django.contrib.auth.models import User
 from django import forms
 from .models import *
 
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
+
+
 class SignUpForm(UserCreationForm):
 	email = forms.EmailField(label="", widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'Email Address'}))
 	first_name = forms.CharField(label="", max_length=100, widget=forms.TextInput(attrs={'class':'form-control', 'placeholder':'First Name'}))
@@ -59,7 +64,6 @@ class InterestForm(forms.ModelForm):
         model = Interests
         fields = ('roommate_cnt', 'move_in_date')
         widgets = {
-            # 'unit_rent_id': forms.Select(attrs={'class': 'form-control'}),
             'roommate_cnt': forms.NumberInput(attrs={'class': 'form-control'}),
             'move_in_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
@@ -70,7 +74,6 @@ class InterestForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.instance.username = user
         self.instance.unit_rent_id = apartment_unit
-        # self.fields['unit_rent_id'].queryset = ApartmentUnit.objects.all()
 
 class ApartmentSearchForm(forms.Form):
     company_name = forms.CharField(max_length=20, required=False, label='Company Name')
@@ -105,4 +108,16 @@ class AdvancedApartmentUnitSearchForm(forms.Form):
         expected_rent = cleaned_data.get('expected_rent')
         public_amenities = cleaned_data.get('public_amenities')
         private_amenities = cleaned_data.get('private_amenities')
+        return cleaned_data
+    
+
+class SearchInterestForm(forms.Form):
+    roommates = forms.DecimalField(max_digits=20, required=False, label='Roommates')
+    move_in_date_from = forms.DateField(widget= DateInput, required= False, label="Move-In Date From")
+    move_in_date_to = forms.DateField(widget=DateInput, required= False, label="Move-In Date To")
+    def clean(self):
+        cleaned_data = super().clean()
+        roommates = cleaned_data.get('roommates')
+        move_in_date_from = cleaned_data.get('move_in_date_from')
+        move_in_date_to = cleaned_data.get('move_in_date_to')
         return cleaned_data
