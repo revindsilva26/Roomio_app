@@ -37,13 +37,13 @@
 {%for  uni in unit%}
     <div class="card" style="width: 24rem;">
         <div class="card-body">
-          <h5 class="card-title">Unit Number: {{uni.unit_number}}</h5>
+          <h5 class="card-title">Unit Number: {{uni.1}}</h5>
           <br/>
-          <p class="card-text">Monthly Rent: ${{uni.monthly_rent}}</p>
+          <p class="card-text">Monthly Rent: ${{uni.2}}</p>
           <p class="card-text">Bedrooms: {{bedrooms|get_item:uni}}  Bathrooms: {{bathrooms|get_item:uni}}</p>
-          <p class="card-text">Square Footage: {{uni.square_footage}}</p>
-          <p class="card-text">Available Move in Date: {{uni.available_date_for_move_in}}</p>
-          <a href="{% url 'view_interest' uni.unit_rent_id%}" class="btn btn-dark">View Interests</a>
+          <p class="card-text">Square Footage: {{uni.3}}</p>
+          <p class="card-text">Available Move in Date: {{uni.4}}</p>
+          <a href="{% url 'view_interest' uni.0%}" class="btn btn-dark">View Interests</a>
         </div>
     </div>
     {%endfor%}

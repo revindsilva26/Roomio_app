@@ -239,13 +239,16 @@ def buildingUnitInfo(request):
                 with connection.cursor() as cursor:
                     cursor.execute(query, [building_name])
                     apartment = cursor.fetchone()
+                if not apartment:
+                    messages.success(request,"Does not exist!")
+                    return render(request, 'search_unit.html', {"form": form})
                 query = """
                     SELECT * FROM app_apartmentunit WHERE apartment_building_id = %s and unit_number = %s
                 """
                 with connection.cursor() as cursor:
                     cursor.execute(query, [apartment[0], unit_number])
                     apartment_unit = cursor.fetchone()
-                if not apartment_unit or not apartment:
+                if not apartment_unit:
                     messages.success(request,"Does not exist!")
                     return render(request, 'search_unit.html', {"form": form})
                 query = """
@@ -279,23 +282,77 @@ def advancedBuildingUnitInfo(request):
             expected_rent = form.cleaned_data['expected_rent']
             public_amenity_list = set(form.cleaned_data['public_amenities'])
             private_amenity_list = set(form.cleaned_data['private_amenities'])
-            apartment = ApartmentBuilding.objects.get(building_name = building_name)
-            apartment_unit = ApartmentUnit.objects.filter(apartment_building = apartment).filter(monthly_rent__gte = int(expected_rent)-100, monthly_rent__lte = int(expected_rent) + 100)
+            # apartment = ApartmentBuilding.objects.get(building_name = building_name)
+            # apartment_unit = ApartmentUnit.objects.filter(apartment_building = apartment).filter(monthly_rent__gte = int(expected_rent)-100, monthly_rent__lte = int(expected_rent) + 100)
+            query = """
+                SELECT * FROM app_apartmentbuilding WHERE building_name = %s
+            """
+            with connection.cursor() as cursor:
+                cursor.execute(query, [building_name])
+                apartment = cursor.fetchone()
+            if not apartment:
+                messages.success(request,"Does not exist!")
+                return render(request, 'advanced_search_unit.html', {"form": form})
+            query = """
+                SELECT *
+                FROM app_apartmentunit
+                WHERE apartment_building_id = %s
+                AND monthly_rent >= %s
+                AND monthly_rent <= %s
+            """
+            expected_rent_min = int(expected_rent) - 100
+            expected_rent_max = int(expected_rent) + 100
+            with connection.cursor() as cursor:
+                cursor.execute(query, [apartment[0], expected_rent_min, expected_rent_max])
+                apartment_unit = cursor.fetchall()
+            if not apartment_unit:
+                messages.success(request,"Does not exist!")
+                return render(request, 'advanced_search_unit.html', {"form": form})
             bedrooms = {}; bathrooms = {}; filtered_apartment_units = []
-            building_amenities = set([x.atype_id for x in Provides.objects.filter(apartment_building = apartment)])
+            query = """
+                SELECT atype_id
+                FROM app_provides
+                WHERE apartment_building_id = %s
+            """
+            with connection.cursor() as cursor:
+                cursor.execute(query, [apartment[0]])
+                building_amenities = cursor.fetchall()
+            b_amenities = []
+            for amenity in  building_amenities:
+                b_amenities.append(amenity[0])
+            # building_amenities = set([x.atype_id for x in Provides.objects.filter(apartment_building = apartment)])
             for apartment_unit_i in apartment_unit:
-                unit_amenities = set([x.atype_id for x in AmenitiesIn.objects.filter(unit_rent_id = apartment_unit_i)])
-                if len(unit_amenities) < len(private_amenity_list) or len(building_amenities) < len(public_amenity_list):
+                query = """
+                    SELECT atype_id
+                    FROM app_amenitiesin
+                    WHERE unit_rent_id_id = %s
+                """
+                with connection.cursor() as cursor:
+                    cursor.execute(query, [apartment_unit_i[0]])
+                    unit_amenities = cursor.fetchall()
+                # unit_amenities = set([x.atype_id for x in AmenitiesIn.objects.filter(unit_rent_id = apartment_unit_i)])
+                u_amenities = []
+                for  amenity in unit_amenities:
+                    u_amenities.append(amenity[0])
+
+                if len(u_amenities) < len(private_amenity_list) or len(b_amenities) < len(public_amenity_list):
                     messages.success(request,"Try again!")  
                     return render(request, 'advanced_search_unit.html', {"form": form})
-                if private_amenity_list.issubset(unit_amenities) and public_amenity_list.issubset(building_amenities):    
+
+                if private_amenity_list.issubset(set(u_amenities)) and public_amenity_list.issubset(set(b_amenities)):    
                     filtered_apartment_units.append(apartment_unit_i)
                 bed = 0; bath = 0
-                k = Rooms.objects.filter(unit_rent_id = apartment_unit_i)
+                query = """
+                    SELECT * FROM app_rooms WHERE unit_rent_id_id = %s
+                """
+                with connection.cursor() as cursor:
+                    cursor.execute(query, [apartment_unit_i[0]])
+                    k = cursor.fetchall()
+                # k = Rooms.objects.filter(unit_rent_id = apartment_unit_i)
                 for  room in k:
-                    if "bedroom" in room.name.lower():
+                    if "bedroom" in room[1].lower():
                         bed +=1
-                    elif "bathroom" in room.name.lower():
+                    elif "bathroom" in room[1].lower():
                         bath +=1
                 bedrooms[apartment_unit_i] = bed
                 bathrooms[apartment_unit_i] = bath
