@@ -167,7 +167,6 @@ def viewInterests(request, pk):
     return render(request, 'interests.html', {"interests":rows, 'apartment_unit':pk})
 
 
-
 def apartment(request, pk):
     allowed = []
     not_allowed = []
@@ -225,7 +224,6 @@ def updatePet(request, pk):
     return render(request, 'update_pet.html', {"form":form})
 
 
-
 def buildingUnitInfo(request):
     if request.method == 'POST':
         form = ApartmentUnitSearchForm(request.POST)
@@ -233,24 +231,40 @@ def buildingUnitInfo(request):
             building_name = form.cleaned_data['building_name']
             unit_number = form.cleaned_data['unit_number']
             if building_name and unit_number:
-                try:
-                    apartment = ApartmentBuilding.objects.get(building_name = building_name)
-                    apartment_unit = ApartmentUnit.objects.filter(apartment_building = apartment).get(unit_number = unit_number)
-                except ObjectDoesNotExist:
-                    apartment = None
-                    apartment_unit = None
-                if not apartment_unit and not apartment:
+                # apartment = ApartmentBuilding.objects.get(building_name = building_name)
+                # apartment_unit = ApartmentUnit.objects.filter(apartment_building = apartment).get(unit_number = unit_number)
+                query = """
+                    SELECT * FROM app_apartmentbuilding WHERE building_name = %s
+                """
+                with connection.cursor() as cursor:
+                    cursor.execute(query, [building_name])
+                    apartment = cursor.fetchone()
+                query = """
+                    SELECT * FROM app_apartmentunit WHERE apartment_building_id = %s and unit_number = %s
+                """
+                with connection.cursor() as cursor:
+                    cursor.execute(query, [apartment[0], unit_number])
+                    apartment_unit = cursor.fetchone()
+                if not apartment_unit or not apartment:
                     messages.success(request,"Does not exist!")
                     return render(request, 'search_unit.html', {"form": form})
-                rooms = Rooms.objects.filter(unit_rent_id = apartment_unit)
+                query = """
+                    SELECT * FROM app_rooms WHERE unit_rent_id_id = %s
+                """
+                with connection.cursor() as cursor:
+                    cursor.execute(query, [apartment_unit[0]])
+                    rooms = cursor.fetchall()
                 bedrooms = 0; bathrooms = 0
                 for  room in rooms:
-                    if "bedroom" in room.name.lower():
+                    if "bedroom" in room[1].lower():
                         bedrooms +=1
-                    elif "bathroom" in room.name.lower():
+                    elif "bathroom" in room[1].lower():
                         bathrooms +=1            
-                print(bedrooms, bathrooms)    
+                print(bedrooms, bathrooms)
                 return render(request, 'search_unit.html', {'apartment':apartment, "unit":apartment_unit, "bedrooms": bedrooms, "bathrooms":bathrooms, "form": form})
+            else:
+                messages.success(request,"Give exact values!")
+                return render(request, 'search_unit.html', {"form": form})
 
     else:
          form = ApartmentUnitSearchForm()
