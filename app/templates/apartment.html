@@ -20,6 +20,7 @@
           <p class="card-text">Available Move in Date: {{unit.available_date_for_move_in}}</p>
           <a href="{% url 'view_interest' unit.unit_rent_id%}" class="btn btn-dark">View Interests</a>
           <a href="{% url 'searchInterest' unit.unit_rent_id%}" class="btn btn-secondary">Search Interests</a>
+          <a href="{% url 'rentPriceView' unit.unit_rent_id%}" class="btn btn-secondary">-></a>
         </div>
     </div>
     {%endfor%}

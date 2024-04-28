@@ -297,3 +297,27 @@ def zipcodeRentEstimate(request):
     else:
         form = ZipCodeSearchForm()
         return render(request, 'estimateRent.html', {'form': form})
+
+def rentPriceView(request, pk):
+    unit = ApartmentUnit.objects.get(unit_rent_id = pk)
+    unit_rent = unit.monthly_rent
+    unit_footage_upper = unit.square_footage  + (unit.square_footage * .1)
+    unit_footage_lower = unit.square_footage  - (unit.square_footage * .1)
+    building = unit.apartment_building
+    city = building.addr_city
+    buildings_in_city = ApartmentBuilding.objects.filter(addr_city=city)
+    rent_sum = 0.0
+    unit_count = 0.0
+    for  bldg in buildings_in_city:
+        unit_in_city = ApartmentUnit.objects.filter(apartment_building = bldg).filter(square_footage__gte = unit_footage_lower, square_footage__lte = unit_footage_upper).filter(~Q(unit_rent_id = pk))
+        for u in unit_in_city:
+            rent_sum += u.monthly_rent
+            unit_count += 1
+    if  unit_count > 0 :
+        average_rent = rent_sum/unit_count
+    else: 
+        average_rent = 0
+    data = [unit_rent, average_rent]
+
+    return render(request, 'rent_price_view.html', {'data':data})	
+
