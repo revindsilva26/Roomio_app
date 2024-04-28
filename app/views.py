@@ -18,22 +18,19 @@ def get_item(dictionary, key):
 def home(request):
     return render(request, "home.html", {})
 
-def login_veiw(request):
-	# Check to see if logging in
-	if request.method == 'POST':
-		username = request.POST['username']
-		password = request.POST['password']
-		# Authenticate
-		user = authenticate(request, username=username, password=password)
-		if user is not None:
-			login(request, user)
-			messages.success(request, "You Have Been Logged In!")
-			return redirect('home')
-		else:
-			messages.success(request, "There Was An Error Logging In, Please Try Again...")
-			return redirect('home')
-	else:
-		return render(request, 'login.html', {})
+def login_view(request):
+    login_error = None
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            # Handle invalid login
+            login_error = "Invalid username or password."
+    return render(request, 'login.html', {'login_error': login_error})
 
 
 def logout_user(request):
