@@ -151,8 +151,21 @@ def postInterest(request, pk):
     return render(request, 'post_interests.html', {'form': form})
 
 def viewInterests(request, pk):
-    interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk)
-    return render(request, 'interests.html', {'interests':interests, 'apartment_unit':pk})
+    with connection.cursor() as cursor:
+        # Execute raw SQL query
+        cursor.execute("""
+            SELECT * 
+            FROM app_interests 
+            WHERE username_id != %s 
+            AND unit_rent_id_id = %s
+        """, [request.user.username, pk])
+
+        # Fetch all rows from the cursor
+        rows = cursor.fetchall()
+        print({"interests":rows})
+
+    return render(request, 'interests.html', {"interests":rows, 'apartment_unit':pk})
+
 
 
 def apartment(request, pk):
