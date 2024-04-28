@@ -9,6 +9,7 @@ from django.template.defaulttags import register
 from django.db.models import Avg
 from django.db import connection
 
+from django.db import connection
 
 @register.filter
 def get_item(dictionary, key):
@@ -128,8 +129,14 @@ def registerPet(request):
     return render(request, 'register_pet.html', {'form':form})	
 
 def viewPet(request):
-    pets = Pet.objects.filter(user = request.user)
-    return render(request, 'pets.html', {'pets':pets})
+    query = """
+        SELECT * FROM app_pet WHERE user_id = %s
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query, [request.user])
+        pets = cursor.fetchall()
+    # print(pets)
+    return render(request, 'pets.html', {"pets":pets})
 
 def postInterest(request, pk):
     apartment_unit = ApartmentUnit.objects.get(unit_rent_id = pk)
