@@ -2,6 +2,20 @@
 {% load static %}
 
 {% block content %}
+{% if messages %}
+<section class="container my-4">
+  <div class="row">
+    <div class="col-md-8 offset-md-2">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
   <div class="hero-section d-flex justify-content-center align-items-center">
     <div class="container text-center">
       {% if user.is_authenticated %}
