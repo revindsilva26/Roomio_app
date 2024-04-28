@@ -1,30 +1,52 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block content %}
-    {% if user.is_authenticated %}
-        <h1>Search for Available Units</h1>
-        <br/>
-        <div class="col-md-6 offset-md-3">
-            <form class="form-inline my-2 my-lg-0" method="post">
-                {% csrf_token %}
+<div class="search-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        {% if user.is_authenticated %}
+        <div class="card">
+          <div class="card-body">
+            <h1 class="card-title text-center mb-4">Search for Available Units</h1>
+            <form method="post">
+              {% csrf_token %}
+              <div class="mb-3">
                 {{ form.as_p }}
-                <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Search</button>
+              </div>
+              <div class="d-grid">
+                <button class="btn btn-primary" type="submit">Search</button>
+              </div>
             </form>
+          </div>
         </div>
+
         {% if form.is_bound %}
-            {% if no_units_message %}
-                <p>{{ no_units_message }}</p>
-            {% else %}
-                <h3>Available Units in ZIP code {{ zipcode }}</h3>
-                <ul>
-                    {% for unit in units_with_rent %}
-                        <li>
-                            Unit: ({{ unit.bedroom }} bedrooms, {{ unit.bathroom }} bathrooms)
-                            <br>
-                            Average Monthly Rent: ${{ unit.avgRent|floatformat:"2" }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+        {% if no_units_message %}
+        <div class="alert alert-warning mt-4" role="alert">
+          {{ no_units_message }}
+        </div>
+        {% else %}
+        <div class="card mt-4">
+          <div class="card-body">
+            <h3 class="card-title">Available Units in ZIP code {{ zipcode }}</h3>
+            <ul class="list-group">
+              {% for unit in units_with_rent %}
+              <li class="list-group-item">
+                Unit: ({{ unit.bedrooms }} bedrooms, {{ unit.bathrooms }} bathrooms)
+                <br>
+                Average Monthly Rent: ${{ unit.avgRent|floatformat:"2" }}
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
         {% endif %}
-    {% endif %}
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
