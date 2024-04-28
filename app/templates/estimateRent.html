@@ -34,7 +34,7 @@
             <ul class="list-group">
               {% for unit in units_with_rent %}
               <li class="list-group-item">
-                Unit: ({{ unit.bedrooms }} bedrooms, {{ unit.bathrooms }} bathrooms)
+                Unit: ({{ unit.bedroom }} bedrooms, {{ unit.bathroom }} bathrooms)
                 <br>
                 Average Monthly Rent: ${{ unit.avgRent|floatformat:"2" }}
               </li>
