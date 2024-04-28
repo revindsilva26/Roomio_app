@@ -294,29 +294,36 @@ def advancedBuildingUnitInfo(request):
     
 
 def searchInterest(request, pk):
-    unit = ApartmentUnit.objects.get(pk = pk)
-    interests = Interests.objects.filter(unit_rent_id = unit).filter(~Q(username = request.user))
+    unit = ApartmentUnit.objects.get(pk=pk)
     if request.method == 'POST':
         form = SearchInterestForm(request.POST)
         if form.is_valid():
             roommates = form.cleaned_data['roommates']
             move_in_date_from = form.cleaned_data['move_in_date_from']
-            move_in_date_to =form.cleaned_data['move_in_date_to']
-            if roommates and not move_in_date_from and not move_in_date_to:
-                interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk).filter(roommate_cnt = roommates)
-            elif not roommates and move_in_date_to and move_in_date_from:
-                interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk).filter(move_in_date__gte = move_in_date_from, move_in_date__lte = move_in_date_to) 
-            else:
-                interests = Interests.objects.filter(~Q(username = request.user)).filter(unit_rent_id_id = pk).filter(roommate_cnt = roommates).filter(move_in_date__gte = move_in_date_from, move_in_date__lte = move_in_date_to)
-            return render(request, 'interests.html', {'interests':interests, 'apartment_unit':pk})
+            move_in_date_to = form.cleaned_data['move_in_date_to']
             
+            # Start building the raw SQL query
+            query = "SELECT * FROM app_interests WHERE unit_rent_id_id = %s AND username_id != %s"
+            params = [pk, request.user.username]
+            
+            if roommates:
+                query += " AND roommate_cnt = %s"
+                params.append(roommates)
+            
+            if move_in_date_from and move_in_date_to:
+                query += " AND move_in_date >= %s AND move_in_date <= %s"
+                params.extend([move_in_date_from, move_in_date_to])
+            
+            # Execute the raw SQL query
+            with connection.cursor() as cursor:
+                cursor.execute(query, params)
+                interests = cursor.fetchall()
+                
+            return render(request, 'interests.html', {'interests': interests, 'apartment_unit': pk})
     else:
         form = SearchInterestForm()
-    return render(request, 'search_Interest.html', {'form':form, "unit":unit})	
-
-from django.shortcuts import render
-from .forms import ZipCodeSearchForm
-from django.db.models import Avg
+    
+    return render(request, 'search_Interest.html', {'form': form, 'unit': unit})
 
 def zipcodeRentEstimate(request):
     if request.method == 'POST':
