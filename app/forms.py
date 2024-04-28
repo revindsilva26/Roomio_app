@@ -2,6 +2,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django import forms
 from .models import *
+from django.db import connection
 
 
 class DateInput(forms.DateInput):
@@ -96,8 +97,27 @@ class ApartmentUnitSearchForm(forms.Form):
         return cleaned_data
     
 class AdvancedApartmentUnitSearchForm(forms.Form):
-    public_amenities_list = set([(amenity.atype, amenity.atype) for amenity in list(Provides.objects.all())])
-    private_amenities_list = set([(amenity.atype, amenity.atype) for amenity in list(AmenitiesIn.objects.all())])
+    query = """
+        SELECT atype_id
+        FROM app_provides
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        public_amenities = cursor.fetchall()
+    query = """
+        SELECT atype_id
+        FROM app_amenitiesin
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        private_amenities = cursor.fetchall()
+    
+    public_amenities_list = set([(amenity[0], amenity[0]) for amenity in  public_amenities])
+    private_amenities_list = set([(amenity[0], amenity[0]) for amenity in  private_amenities])
+
+    # public_amenities_list = set([(amenity.atype, amenity.atype) for amenity in list(Provides.objects.all())])
+    # private_amenities_list = set([(amenity.atype, amenity.atype) for amenity in list(AmenitiesIn.objects.all())])
+
     building_name = forms.CharField(max_length=20, required=True, label='Building Name')
     expected_rent = forms.DecimalField(max_digits=20, required = False, label = 'Expected Rent')
     public_amenities = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple, choices=public_amenities_list, required=False, label='Public Amenities')

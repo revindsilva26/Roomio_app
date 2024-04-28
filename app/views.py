@@ -9,7 +9,6 @@ from django.template.defaulttags import register
 from django.db.models import Avg
 from django.db import connection
 
-from django.db import connection
 
 @register.filter
 def get_item(dictionary, key):
