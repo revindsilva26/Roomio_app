@@ -1,37 +1,40 @@
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{%url 'home'%}">Roomio</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          
-          {% if user.is_authenticated %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand text-logo" href="{% url 'home' %}">Roomio</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        {% if user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'search_apartment' %}">Apartments</a>
+            <a class="nav-link" href="{% url 'search_apartment' %}"><i class="fas fa-home"></i> Apartments</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'buildingUnitInfo' %}">Units</a>
+            <a class="nav-link" href="{% url 'buildingUnitInfo' %}"><i class="fas fa-building"></i> Units</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'viewPet' %}">Your Pets</a>
+            <a class="nav-link" href="{% url 'estimateRent' %}"><i class="fas fa-dollar-sign"></i> Estimate Rent</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            <a class="nav-link" href="{% url 'viewPet' %}"><i class="fas fa-paw"></i> Your Pets</a>
           </li>
-  
-          {% else %}
+        {% endif %}
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        {% if user.is_authenticated %}
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'register' %}">Register</a>
+            <a class="nav-link" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}"><i class="fas fa-user-plus"></i> Register</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'home' %}">Login</a>
-          </li>        
-          {% endif %}
-        </div>
-
-        </form>
-      </div>
+            <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+          </li>
+        {% endif %}
+      </ul>
     </div>
-  </nav>
+  </div>
+</nav>

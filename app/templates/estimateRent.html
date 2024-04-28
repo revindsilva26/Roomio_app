@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+    {% if user.is_authenticated %}
+        <h1>Search for Available Units</h1>
+        <br/>
+        <div class="col-md-6 offset-md-3">
+            <form class="form-inline my-2 my-lg-0" method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Search</button>
+            </form>
+        </div>
+        {% if form.is_bound %}
+            {% if no_units_message %}
+                <p>{{ no_units_message }}</p>
+            {% else %}
+                <h3>Available Units in ZIP code {{ zipcode }}</h3>
+                <ul>
+                    {% for unit in units_with_rent %}
+                        <li>
+                            Unit: ({{ unit.bedroom }} bedrooms, {{ unit.bathroom }} bathrooms)
+                            <br>
+                            Average Monthly Rent: ${{ unit.avgRent|floatformat:"2" }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endblock %}
