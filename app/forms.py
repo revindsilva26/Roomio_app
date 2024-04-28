@@ -73,7 +73,7 @@ class InterestForm(forms.ModelForm):
         apartment_unit = kwargs.pop('apartment_unit', None)
         super().__init__(*args, **kwargs)
         self.instance.username = user
-        self.instance.unit_rent_id = apartment_unit
+        self.instance.unit_rent_id_id = apartment_unit
 
 class ApartmentSearchForm(forms.Form):
     company_name = forms.CharField(max_length=20, required=False, label='Company Name')

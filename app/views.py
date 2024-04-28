@@ -139,15 +139,15 @@ def viewPet(request):
     return render(request, 'pets.html', {"pets":pets})
 
 def postInterest(request, pk):
-    apartment_unit = ApartmentUnit.objects.get(unit_rent_id = pk)
+    # apartment_unit = ApartmentUnit.objects.get(unit_rent_id = pk)
     if request.method == 'POST':
-        form = InterestForm(request.POST, user=request.user, apartment_unit = apartment_unit)
+        form = InterestForm(request.POST, user=request.user, apartment_unit = pk)
         if form.is_valid():
             form.save()
             messages.success(request,"You have successfully posted your interest")
             return redirect('view_interest' , pk )
     else:
-        form = InterestForm(user=request.user, apartment_unit = apartment_unit)
+        form = InterestForm(user=request.user, apartment_unit = pk)
     return render(request, 'post_interests.html', {'form': form})
 
 def viewInterests(request, pk):
