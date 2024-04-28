@@ -13,6 +13,9 @@ def get_item(dictionary, key):
     return dictionary.get(key)
 
 def home(request):
+    return render(request, "home.html", {})
+
+def login_veiw(request):
 	# Check to see if logging in
 	if request.method == 'POST':
 		username = request.POST['username']
@@ -27,7 +30,7 @@ def home(request):
 			messages.success(request, "There Was An Error Logging In, Please Try Again...")
 			return redirect('home')
 	else:
-		return render(request, 'home.html', {})
+		return render(request, 'login.html', {})
 
 
 def logout_user(request):
