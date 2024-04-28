@@ -402,60 +402,80 @@ def zipcodeRentEstimate(request):
         if form.is_valid():
             zipcode = form.cleaned_data['zipcode']
             try:
-                buildings = ApartmentBuilding.objects.filter(addr_zipcode=zipcode)
-                units = ApartmentUnit.objects.filter(apartment_building__in=buildings)
+                with connection.cursor() as cursor:
+                    # Retrieve buildings based on the provided zipcode
+                    cursor.execute("SELECT * FROM app_apartmentbuilding WHERE addr_zipcode = %s", [zipcode])
+                    buildings = cursor.fetchall()
+                    # Retrieve units based on the filtered buildings
+                    building_ids = [building[0] for building in buildings]
+
+                    if len(building_ids) > 0:
+                        cursor.execute("SELECT * FROM app_apartmentunit WHERE apartment_building_id IN %s", [tuple(building_ids)])
+                        units = cursor.fetchall()
+                        # Calculate the number of bedrooms and bathrooms for each unit
+                        unit_ids = [unit[1] for unit in units]
+                        # print(unit_ids)
+                        cursor.execute("""
+                            SELECT unit_rent_id_id, 
+                                SUM(CASE WHEN name LIKE '%%Bedroom%%' THEN 1 ELSE 0 END) AS bedrooms,
+                                SUM(CASE WHEN name LIKE '%%Bathroom%%' THEN 1 ELSE 0 END) AS bathrooms
+                            FROM app_rooms
+                            JOIN app_apartmentunit ON app_apartmentunit.unit_rent_id = app_rooms.unit_rent_id_id
+                            WHERE unit_number IN %s AND app_apartmentunit.apartment_building_id IN %s
+                            GROUP BY unit_rent_id_id
+                        """, [tuple(unit_ids), tuple(building_ids)])
+                        room_counts = cursor.fetchall()
+                        # print(room_counts)
+                        # Calculate the average rent for each bedroom-bathroom combination
+                        cursor.execute("""
+                            SELECT bedrooms, bathrooms, AVG(monthly_rent) AS avg_rent
+                            FROM (
+                                SELECT unit_rent_id_id, bedrooms, bathrooms, monthly_rent
+                                FROM app_apartmentUnit
+                                INNER JOIN (
+                                    SELECT unit_rent_id_id,
+                                        SUM(CASE WHEN name LIKE '%%Bedroom%%' THEN 1 ELSE 0 END) AS bedrooms,
+                                        SUM(CASE WHEN name LIKE '%%Bathroom%%' THEN 1 ELSE 0 END) AS bathrooms
+                                    FROM app_rooms
+                                    GROUP BY unit_rent_id_id
+                                ) room_counts ON app_apartmentunit.unit_rent_id = room_counts.unit_rent_id_id
+                                WHERE apartment_building_id IN %s
+                            ) tmp
+                            GROUP BY bedrooms, bathrooms
+                        """, [tuple(building_ids)])
+                        avg_rent_units = cursor.fetchall()
+                        # print(avg_rent_unis)
+                        # Prepare the context data
+                        units_with_rent = [
+                            {
+                                'bedroom': avg_rent[0],
+                                'bathroom': avg_rent[1],
+                                'avgRent': avg_rent[2]
+                            }
+                            for avg_rent in avg_rent_units
+                        ]
+                        context = {
+                            'zipcode': zipcode,
+                            'units_with_rent': units_with_rent,
+                            'form': form,
+                        }
+                        return render(request, 'estimateRent.html', context)
+                    else:
+                        context = {
+                            'zipcode': zipcode,
+                            'no_units_message': 'No available units satisfy the criteria in the given ZIP code.',
+                            'form': form,
+                        }
+                        return render(request, 'estimateRent.html', context)
+
             except ApartmentBuilding.DoesNotExist:
-                buildings = None
-                units = None
-
-            if units:
-                units_with_rent = []
-                allUnits = {}
-                rent_sum = {}
-                rent_count = {}
-                for unit in units:
-                    bedrooms = {}
-                    bathrooms = {}
-                    bed = 0
-                    bath = 0
-                    k = Rooms.objects.filter(unit_rent_id=unit)
-                    for room in k:
-                        if "bedroom" in room.name.lower():
-                            bed += 1
-                        elif "bathroom" in room.name.lower():
-                            bath += 1
-                    bedrooms[unit] = bed
-                    bathrooms[unit] = bath
-                    # units_with_rent.append({
-                    #     'unit': unit,
-                    #     'bedrooms': bed,
-                    #     'bathrooms': bath,
-                    # })
-                    unitId = unit.unit_rent_id
-                    allUnits[":bed:" +str(bedrooms[unit]) + ":bath:"+str(bathrooms[unit])] = {"bed" : bedrooms[unit], "bath" : bathrooms[unit]}
-                    rent_sum[":bed:"+str(bedrooms[unit]) + ":bath:"+str(bathrooms[unit])] = rent_sum.get(":bed:"+str(bedrooms[unit]) + ":bath:"+str(bathrooms[unit]),0) + unit.monthly_rent
-                    rent_count[":bed:"+str(bedrooms[unit]) + ":bath:"+str(bathrooms[unit])] = rent_count.get(":bed:"+str(bedrooms[unit]) + ":bath:"+str(bathrooms[unit]),0) + 1
-                    
-                avgRentUnit = {unitInfo : rent_sum[unitInfo]/rent_count[unitInfo] for unitInfo in rent_sum} 
-                for unit in avgRentUnit:
-                    units_with_rent.append({"bedroom": allUnits[unit]["bed"], "bathroom": allUnits[unit]["bath"], "avgRent": avgRentUnit[unit]})
-
-                context = {
-                    'zipcode': zipcode,
-                    'units_with_rent': units_with_rent,
-                    'form': form,
-                    # 'avgRentUnit': avgRentUnit,
-                    # 'bedrooms': bedrooms,
-                    # 'bathrooms': bathrooms,
-                }
-                return render(request, 'estimateRent.html', context)
-            else:
                 context = {
                     'zipcode': zipcode,
                     'no_units_message': 'No available units satisfy the criteria in the given ZIP code.',
                     'form': form,
                 }
                 return render(request, 'estimateRent.html', context)
+
     else:
         form = ZipCodeSearchForm()
         return render(request, 'estimateRent.html', {'form': form})
