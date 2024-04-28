@@ -1,55 +1,57 @@
 {% extends 'base.html' %}
-
-
 {% block content %}
+{% if user.is_authenticated %}
+  {% if messages %}
+    <div class="container my-4">
+      <div class="row">
+        <div class="col-md-8 offset-md-2">
+          {% for message in messages %}
+            {% if message.tags == 'error' %}
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            {% else %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {% endif %}
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
 
-{%if user.is_authenticated %}
-{% if messages %}
-<div class="container">
-   <div class="row">
-   <div class="col-md-8 offset-md-2">
-         {% for message in messages %}
-         {% if message.tags == 'error' %}
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-         {% else %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-         {% endif %}
-         {{ message }}
-         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-         </div>
-         {% endfor %}
-   </div>
-   </div>
-</div>
+  <section class="search-section">
+    <div class="container">
+      <h1 class="hero-title text-center mb-5">Search For Units</h1>
+      <div class="col-md-6 offset-md-3">
+        <form class="form-inline my-2 my-lg-0" method="POST" action="{% url 'buildingUnitInfo' %}">
+          {% csrf_token %}
+          <div class="form-group mb-3">
+            {{ form.as_p }}
+          </div>
+          <button class="btn btn-primary my-2 my-sm-0" type="submit">Search</button>
+        </form>
+      </div>
+      <div class="text-center mt-4">
+        <a href="{% url 'advancedBuildingUnitInfo' %}" class="btn btn-dark">Advanced Search</a>
+      </div>
+    </div>
+  </section>
+
+  {% if apartment %}
+    <section class="container my-5">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="card-title">{{ apartment.2 }}</h4>
+          <h5 class="card-text">Unit Number: {{ unit.1 }}</h5>
+          <p class="card-text">Monthly Rent: ${{ unit.2 }}</p>
+          <p class="card-text">Square Footage: {{ unit.3 }}</p>
+          <p class="card-text">Available Move in Date: {{ unit.4 }}</p>
+          <p class="card-text">Bedrooms: {{ bedrooms }} Bathrooms: {{ bathrooms }}</p>
+          <a href="{% url 'view_interest' unit.0 %}" class="btn btn-dark">View Interests</a>
+        </div>
+      </div>
+    </section>
+  {% endif %}
 {% endif %}
-<h1> Search For Units</h1>
-<br/>
-<div class="col-md-6 offset-md-3">
-<form class="form-inline my-2 my-lg-0" method=POST action="{%url 'buildingUnitInfo' %}" >
-    {%csrf_token%}
-    {{form.as_p}}
-    <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Search</button>
-</form>
-</div>
-
-<a href="{%url 'advancedBuildingUnitInfo'%}" class="btn btn-dark">Advanced Search</a>
-
-{%if  apartment %}
-<div class="card" style="width: 24rem;">
-  <div class="card-body">
-    <h4 class="card-title">{{apartment.2}}</h4>
-    <br/>
-    <h5 class="card-text">Unit Number: {{unit.1}}</h5>
-    <br/>
-    <p class="card-text">Monthly Rent: ${{unit.2}}</p>
-    <p class="card-text">Square Footage: {{unit.3}}</p>
-    <p class="card-text">Available Move in Date: {{unit.4}}</p>
-    <p class="card-text">Bedrooms: {{bedrooms}} Bathrooms: {{bathrooms}}</p>
-    <a href="{% url 'view_interest' unit.0%}" class="btn btn-dark">View Interests</a>
-  </div>
-</div>
-    
-{%endif%}
-
-{%endif%}
 {% endblock %}

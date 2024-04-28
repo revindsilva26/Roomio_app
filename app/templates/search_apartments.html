@@ -1,32 +1,36 @@
 {% extends 'base.html' %}
-
-
 {% block content %}
-
-{%if user.is_authenticated %}
-
-<h1> Apartments</h1>
-<br/>
-<div class="col-md-6 offset-md-3">
-<form class="form-inline my-2 my-lg-0" method=POST action="{%url 'search_apartment' %}" >
-    {%csrf_token%}
-    {{form.as_p}}
-    <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Search</button>
-</form>
-</div>
-{%if  apartments %}
-    {%for apartment in apartments %}
-    <div class="card">
-        <h5 class="card-header">{{apartment.2}}</h5>
-        <div class="card-body">
-          <h5 class="card-title">Year Built: {{apartment.8}}</h5>
-          <a href={%url 'apartment' apartment.0 %} class="btn btn-dark">View Apartment</a>
+{% if user.is_authenticated %}
+<section class="search-section">
+  <div class="container">
+    <h1 class="hero-title text-center mb-5">Apartments</h1>
+    <div class="col-md-6 offset-md-3">
+      <form class="form-inline my-2 my-lg-0" method="POST" action="{% url 'search_apartment' %}">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+          {{ form.as_p }}
+        </div>
+        <button class="btn btn-primary my-2 my-sm-0" type="submit">Search</button>
+      </form>
+    </div>
+    {% if apartments %}
+    <div class="row mt-5">
+      {% for apartment in apartments %}
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+          <div class="card-header bg-primary text-white">
+            <h5 class="card-title">{{ apartment.2 }}</h5>
+          </div>
+          <div class="card-body">
+            <p class="card-text">Year Built: {{ apartment.8 }}</p>
+            <a href="{% url 'apartment' apartment.0 %}" class="btn btn-primary">View Apartment</a>
+          </div>
         </div>
       </div>
-    
-    <!-- <button type="button" class="btn btn-dark">View Apartment</button> -->
-    {%endfor %}
-{%endif%}
-
-{%endif%}
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
 {% endblock %}
