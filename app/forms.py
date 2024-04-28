@@ -121,3 +121,6 @@ class SearchInterestForm(forms.Form):
         move_in_date_from = cleaned_data.get('move_in_date_from')
         move_in_date_to = cleaned_data.get('move_in_date_to')
         return cleaned_data
+    
+class ZipCodeSearchForm(forms.Form):
+    zipcode = forms.CharField(max_length=5, label='ZIP Code', required=True)

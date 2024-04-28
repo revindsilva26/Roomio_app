@@ -17,4 +17,5 @@ urlpatterns = [
     path('search_building_unit', views.buildingUnitInfo, name = 'buildingUnitInfo'),
     path('advanced_search_building_unit', views.advancedBuildingUnitInfo, name = 'advancedBuildingUnitInfo'),
     path('searchInterest/<int:pk>', views.searchInterest, name= "searchInterest"),
+    path('estimateRent', views.zipcodeRentEstimate, name= "estimateRent"),
 ]

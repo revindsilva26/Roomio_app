@@ -6,6 +6,7 @@ from .models import *
 from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.template.defaulttags import register
+from django.db.models import Avg
 
 @register.filter
 def get_item(dictionary, key):
@@ -225,3 +226,71 @@ def searchInterest(request, pk):
     else:
         form = SearchInterestForm()
     return render(request, 'search_Interest.html', {'form':form, "unit":unit})	
+
+from django.shortcuts import render
+from .forms import ZipCodeSearchForm
+from django.db.models import Avg
+
+def zipcodeRentEstimate(request):
+    if request.method == 'POST':
+        form = ZipCodeSearchForm(request.POST)
+        if form.is_valid():
+            zipcode = form.cleaned_data['zipcode']
+            try:
+                buildings = ApartmentBuilding.objects.filter(addr_zipcode=zipcode)
+                units = ApartmentUnit.objects.filter(apartment_building__in=buildings)
+            except ApartmentBuilding.DoesNotExist:
+                buildings = None
+                units = None
+
+            if units:
+                units_with_rent = []
+                allUnits = {}
+                rent_sum = {}
+                rent_count = {}
+                for unit in units:
+                    bedrooms = {}
+                    bathrooms = {}
+                    bed = 0
+                    bath = 0
+                    k = Rooms.objects.filter(unit_rent_id=unit)
+                    for room in k:
+                        if "bedroom" in room.name.lower():
+                            bed += 1
+                        elif "bathroom" in room.name.lower():
+                            bath += 1
+                    bedrooms[unit] = bed
+                    bathrooms[unit] = bath
+                    # units_with_rent.append({
+                    #     'unit': unit,
+                    #     'bedrooms': bed,
+                    #     'bathrooms': bath,
+                    # })
+                    unitId = unit.unit_rent_id
+                    allUnits[":bed:" +str(bedrooms[unit]) + ":bath:"+str(bathrooms[unit])] = {"bed" : bedrooms[unit], "bath" : bathrooms[unit]}
+                    rent_sum[":bed:"+str(bedrooms[unit]) + ":bath:"+str(bathrooms[unit])] = rent_sum.get(":bed:"+str(bedrooms[unit]) + ":bath:"+str(bathrooms[unit]),0) + unit.monthly_rent
+                    rent_count[":bed:"+str(bedrooms[unit]) + ":bath:"+str(bathrooms[unit])] = rent_count.get(":bed:"+str(bedrooms[unit]) + ":bath:"+str(bathrooms[unit]),0) + 1
+                    
+                avgRentUnit = {unitInfo : rent_sum[unitInfo]/rent_count[unitInfo] for unitInfo in rent_sum} 
+                for unit in avgRentUnit:
+                    units_with_rent.append({"bedroom": allUnits[unit]["bed"], "bathroom": allUnits[unit]["bath"], "avgRent": avgRentUnit[unit]})
+
+                context = {
+                    'zipcode': zipcode,
+                    'units_with_rent': units_with_rent,
+                    'form': form,
+                    # 'avgRentUnit': avgRentUnit,
+                    # 'bedrooms': bedrooms,
+                    # 'bathrooms': bathrooms,
+                }
+                return render(request, 'estimateRent.html', context)
+            else:
+                context = {
+                    'zipcode': zipcode,
+                    'no_units_message': 'No available units satisfy the criteria in the given ZIP code.',
+                    'form': form,
+                }
+                return render(request, 'estimateRent.html', context)
+    else:
+        form = ZipCodeSearchForm()
+        return render(request, 'estimateRent.html', {'form': form})
