@@ -7,6 +7,8 @@ from django.db.models import Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.template.defaulttags import register
 from django.db.models import Avg
+from django.db import connection
+
 
 @register.filter
 def get_item(dictionary, key):
@@ -63,18 +65,55 @@ def searchApartment(request):
             company_name = form.cleaned_data['company_name']
             apartments = []
             if building_name and company_name:
-                apartments = ApartmentBuilding.objects.filter(building_name = building_name).filter(company_name=company_name)
+                query = """
+                    SELECT *
+                    FROM app_apartmentbuilding
+                    WHERE building_name = %s AND company_name = %s
+                """
+                with connection.cursor() as cursor:
+                    cursor.execute(query,[building_name, company_name])
+                    apartments = cursor.fetchall()
+                # apartments = ApartmentBuilding.objects.filter(building_name = building_name).filter(company_name=company_name)
             elif  building_name and not company_name:
-                apartments = ApartmentBuilding.objects.filter(building_name = building_name)
+                query = """
+                    SELECT *
+                    FROM app_apartmentbuilding
+                    WHERE building_name = %s
+                """
+                with connection.cursor() as cursor:
+                    cursor.execute(query,[building_name])
+                    apartments = cursor.fetchall()
+                # apartments = ApartmentBuilding.objects.filter(building_name = building_name)
             elif  not building_name and company_name:
-                apartments = ApartmentBuilding.objects.filter(company_name=company_name)
+                query = """
+                    SELECT *
+                    FROM app_apartmentbuilding
+                    WHERE company_name = %s
+                """
+                with connection.cursor() as cursor:
+                    cursor.execute(query,[company_name])
+                    apartments = cursor.fetchall()
+                # apartments = ApartmentBuilding.objects.filter(company_name=company_name)
             else:
-                 apartments = ApartmentBuilding.objects.all()
+                query = """
+                    SELECT *
+                    FROM app_apartmentbuilding
+                """
+                with connection.cursor() as cursor:
+                    cursor.execute(query)
+                    apartments = cursor.fetchall()
+                #  apartments = ApartmentBuilding.objects.all()
             return render(request, 'search_apartments.html', {'apartments':apartments, "form": form})
     else:
-         form = ApartmentSearchForm()
-         apartments = ApartmentBuilding.objects.all()
-         return render(request, 'search_apartments.html', {'apartments':apartments, "form": form})
+        form = ApartmentSearchForm()
+        query = """
+            SELECT *
+            FROM app_apartmentbuilding
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            apartments = cursor.fetchall()
+        return render(request, 'search_apartments.html', {'apartments':apartments, "form": form})
 
 
 def registerPet(request):
