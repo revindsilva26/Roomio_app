@@ -172,21 +172,46 @@ def apartment(request, pk):
     allowed = []
     not_allowed = []
     flag = False
-    apartment = ApartmentBuilding.objects.get(id = pk)
-    pet_policy = PetPolicy.objects.filter(apartment_building = apartment).filter(is_allowed = True)
-    pets = Pet.objects.filter(user = request.user)
-    apartment_units = ApartmentUnit.objects.filter(apartment_building = apartment)
+    # apartment = ApartmentBuilding.objects.get(id = pk)
+    query = """
+        SELECT * FROM app_apartmentbuilding WHERE id = %s
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query, [pk])
+        apartment = cursor.fetchone()
+    query = """
+        SELECT * FROM app_petpolicy WHERE apartment_building_id = %s AND is_allowed = %s
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query, [pk, 1])
+        pet_policy = cursor.fetchall()
+    query = """
+        SELECT * FROM app_pet WHERE user_id = %s
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query, [request.user])
+        pets = cursor.fetchall()
+    query = """
+        SELECT * FROM app_apartmentunit WHERE apartment_building_id = %s
+    """
+    with connection.cursor() as cursor:
+        cursor.execute(query, [pk])
+        apartment_units = cursor.fetchall()
+    # pet_policy = PetPolicy.objects.filter(apartment_building_id = pk).filter(is_allowed = True)
+    # pets = Pet.objects.filter(user = request.user)
+    # apartment_units = ApartmentUnit.objects.filter(apartment_building = apartment)
     # rooms = Rooms.objects.filter(unit_rent_id__in = apartment_units)
+
     for pet in pets:
         flag = False
         for  policy in pet_policy:
-              if policy.pet_size == pet.pet_size and policy.pet_type == pet.pet_type:
-                   allowed.append(pet)
-                   flag = True
-                   break
+            if policy[2] == pet[3] and policy[2] == pet[3]:
+                allowed.append(pet)
+                flag = True
+                break
         if flag is not True:
-             not_allowed.append(pet)
-        
+            not_allowed.append(pet)
+    print(allowed)
     return render(request, 'apartment.html', {'apartments':apartment, 'policies' : pet_policy, 'allowed':allowed, 'not_allowed': not_allowed, 'apartment_units':apartment_units}) 
 
 

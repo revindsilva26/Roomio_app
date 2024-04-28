@@ -6,21 +6,21 @@
 {%if user.is_authenticated %}
 
 {%if  apartments %}
-    <H1>{{apartments.building_name}}</H1> <br/>
-    <H3>{{apartments.company_name}}</H3> <br/>
+    <H1>{{apartments.2}}</H1> <br/>
+    <H3>{{apartments.1}}</H3> <br/>
     {%if apartment_units %}
     <div style="display: flex;">
     {%for  unit in apartment_units%}
     <div class="card" style="width: 24rem;">
         <div class="card-body">
-          <h5 class="card-title">Unit Number: {{unit.unit_number}}</h5>
+          <h5 class="card-title">Unit Number: {{unit.1}}</h5>
           <br/>
-          <p class="card-text">Monthly Rent: ${{unit.monthly_rent}}</p>
-          <p class="card-text">Square Footage: {{unit.square_footage}}</p>
-          <p class="card-text">Available Move in Date: {{unit.available_date_for_move_in}}</p>
-          <a href="{% url 'view_interest' unit.unit_rent_id%}" class="btn btn-dark">View Interests</a>
-          <a href="{% url 'searchInterest' unit.unit_rent_id%}" class="btn btn-secondary">Search Interests</a>
-          <a href="{% url 'rentPriceView' unit.unit_rent_id%}" class="btn btn-secondary">-></a>
+          <p class="card-text">Monthly Rent: ${{unit.2}}</p>
+          <p class="card-text">Square Footage: {{unit.3}}</p>
+          <p class="card-text">Available Move in Date: {{unit.4}}</p>
+          <a href="{% url 'view_interest' unit.0%}" class="btn btn-dark">View Interests</a>
+          <a href="{% url 'searchInterest' unit.0%}" class="btn btn-secondary">Search Interests</a>
+          <a href="{% url 'rentPriceView' unit.0%}" class="btn btn-secondary">-></a>
         </div>
     </div>
     {%endfor%}
@@ -35,8 +35,8 @@
         <div class="card-body">
           <blockquote class="blockquote mb-0">
             {%for policy in policies%}
-            <p>Pet Type: {{policy.pet_type}}</p>
-            <footer class="blockquote-footer">{{policy.pet_size}}</cite></footer>
+            <p>Pet Type: {{policy.1}}</p>
+            <footer class="blockquote-footer">{{policy.2}}</cite></footer>
             <br/>
             {%endfor%}
           </blockquote>
@@ -50,13 +50,13 @@
             {%if allowed %}
           <h5 class="card-title">Allowed</h5>
             {%for pet in allowed%}
-          <p class="card-text">{{pet.pet_name}}</p>
+          <p class="card-text">{{pet.1}}</p>
             {%endfor%}
             {%endif%}
             {%if not_allowed %}
             <h5 class="card-title">Not Allowed</h5>
               {%for pet in not_allowed%}
-            <p class="card-text">{{pet.pet_name}}</p>
+            <p class="card-text">{{pet.1}}</p>
               {%endfor%}
               {%endif%}
         </div>
